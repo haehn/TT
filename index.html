@@ -5,11 +5,27 @@
         background: black;
         color: white;
         font-family: 'sans-serif';
+        overflow: hidden;
       }
 
       .title {
         font-weight: bold;
         font-size: +2em;
+        float: left;
+        height: 100%;
+        padding: 50px;
+        border-left: dotted thin darkgray;
+      }
+      .times {
+/*        float: left;*/
+        padding-left: 20px;
+/*        font-size: +2em;*/
+
+        color: cyan;
+      }
+
+      .times::first-line{
+        color: yellow;
       }
 
     </style>
@@ -96,8 +112,8 @@
 
 
 
-        // var updateInterval = setInterval(updateTimes, 1000);
-        // var reloadTimeOut = setTimeout(reloadPage, 30000);
+        var updateInterval = setInterval(updateTimes, 1000);
+        var reloadTimeOut = setTimeout(reloadPage, 30000);
 
       }; // END window.onload
 
@@ -111,13 +127,13 @@
         }
 
         // let's parse ETA and create lines
-        for (var R in Object.keys(ETAS)) {
+        for (var R in Object.keys(STOPS)) {
 
-          var line = Object.keys(ETAS)[R];
+          var line = Object.keys(STOPS)[R];
 
           var newdiv = window.document.createElement('div');
           
-          newdiv.innerHTML = '<span id="'+line+'" class="title">'+line+'</span>';
+          newdiv.innerHTML = '<div class="title">'+line+'<div class="times" id="'+line+'"></div></div>';
 
           window.document.body.appendChild(newdiv);
 
@@ -127,20 +143,51 @@
 
       function updateTimes() {
 
-        // var now = new Date();
+        var now = new Date();
+
+        for (var STOP in ETAS) {
+
+          var times = ETAS[STOP];
+
+          document.getElementById(STOP).innerHTML = '';
+
+          for (var t in times) {
+
+            t = times[t];
+
+            var timeleft = t-now;
+
+            var seconds = timeleft / 1000;
+            var minutes = 0;
+
+            if (seconds <= 0) {
+              continue;
+            }
+
+            while (seconds >= 60) {
+              seconds -= 60;
+              minutes += 1;
+            }
+
+            // pad seconds
+            seconds = parseInt(seconds).toString();
+            while( seconds.length < 2) { seconds = "0"+seconds; }
 
 
-        //   var timeleft = eta-now;
+            // console.log(STOP, minutes+':'+seconds);
+
+            document.getElementById(STOP).innerHTML += minutes+':'+seconds+'<br>';
+
+          }
+
+        }
+
+
+        // var timeleft = eta-now;
 
         //   if (timeleft > 0) {
 
-        //     var seconds = timeleft / 1000;
-        //     var minutes = 0;
 
-        //     while (seconds >= 60) {
-        //       seconds -= 60;
-        //       minutes += 1;
-        //     }
 
 
         //     console.log(eta, minutes+':'+seconds);
