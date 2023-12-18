@@ -1,0 +1,160 @@
+<html>
+  <head>
+    <style>
+      html,body {
+        background: black;
+        color: white;
+        font-family: 'sans-serif';
+      }
+
+      .title {
+        font-weight: bold;
+        font-size: +2em;
+      }
+
+    </style>
+    <script>
+
+      // THANKS TO http://trackthet.com/ !!!
+
+
+      STOPS = {
+
+        '77 to Harvard': { 
+          'STOP': 2268,
+          'ROUTE': '77'
+        },
+        '77 to Arlington': {
+          'STOP': 2274,
+          'ROUTE': '77'
+        },
+        'Red Line': {
+          'STOP': 'place-alfcl',
+          'ROUTE': 'Red'
+        }
+
+      }
+
+
+
+      function get(url, callback) {
+
+        var req = new XMLHttpRequest();
+        req.overrideMimeType("application/json");
+        req.open('GET', url, true);
+        req.onload  = function() {
+           var jsonResponse = JSON.parse(req.responseText);
+           
+           callback(jsonResponse);
+
+        };
+        req.send(null);
+
+      }
+
+      ETAS = {};
+      LOADEDCOUNT = 0;
+
+
+      window.onload = function() {
+
+        for (var S in STOPS) {
+
+          STOP = STOPS[S].STOP;
+          ROUTE = STOPS[S].ROUTE;
+
+          get('https://api-v3.mbta.com/predictions?api_key=521d9da9f7284981ac235d5073cf0456&include=route,stop,trip&sort=departure_time&filter[stop]='+STOP, function(S, ROUTE, e) {
+
+            for (var d in e.data) {
+
+              var route = e.data[d].relationships.route.data.id;
+
+              if (route != ROUTE) {
+                //don't care about it
+                continue;
+              }
+
+
+              if (route == 'Red' && e.data[d].attributes.direction_id == 1) {
+                //don't care about it
+                continue;
+              }
+
+              if (!(S in ETAS)) {
+                ETAS[S] = [];
+              }
+
+              ETAS[S].push( new Date(e.data[d].attributes.departure_time) );
+
+            }
+
+            updateUI();
+
+          }.bind(this, S, ROUTE)); // END GET
+
+        }
+
+
+
+        // var updateInterval = setInterval(updateTimes, 1000);
+        // var reloadTimeOut = setTimeout(reloadPage, 30000);
+
+      }; // END window.onload
+
+
+      function updateUI() {
+
+        if ((LOADEDCOUNT+1) < Object.keys(STOPS).length) {
+          // not done loading
+          LOADEDCOUNT++;
+          return;
+        }
+
+        // let's parse ETA and create lines
+        for (var R in Object.keys(ETAS)) {
+
+          var line = Object.keys(ETAS)[R];
+
+          var newdiv = window.document.createElement('div');
+          
+          newdiv.innerHTML = '<span id="'+line+'" class="title">'+line+'</span>';
+
+          window.document.body.appendChild(newdiv);
+
+        }
+
+      }
+
+      function updateTimes() {
+
+        // var now = new Date();
+
+
+        //   var timeleft = eta-now;
+
+        //   if (timeleft > 0) {
+
+        //     var seconds = timeleft / 1000;
+        //     var minutes = 0;
+
+        //     while (seconds >= 60) {
+        //       seconds -= 60;
+        //       minutes += 1;
+        //     }
+
+
+        //     console.log(eta, minutes+':'+seconds);
+
+        //   }
+
+      }
+
+      function reloadPage() {
+        location.reload(true);
+      }
+
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
